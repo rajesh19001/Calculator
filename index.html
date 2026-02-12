@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday Calculator - Your Life in Numbers</title>
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-input: #334155;
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent: #38bdf8;
+            --accent-hover: #0ea5e9;
+            --success: #22c55e;
+            --warning: #eab308;
+            --purple: #a855f7;
+            --pink: #ec4899;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: var(--bg-body);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0.1;
+            animation: float 20s infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            25% { transform: translateY(-100px) translateX(50px); }
+            50% { transform: translateY(-200px) translateX(-50px); }
+            75% { transform: translateY(-100px) translateX(100px); }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--purple), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: fadeIn 1s ease;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            animation: fadeIn 1s ease 0.2s backwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-section {
+            background: var(--bg-card);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .input-section h2 {
+            color: var(--accent);
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        input, select {
+            padding: 0.75rem 1rem;
+            background: var(--bg-input);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+        }
+
+        .btn {
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.4);
+        }
+
+        .results {
+            display: none;
+            animation: slideUp 0.6s ease;
+        }
+
+        .results.show {
+            display: grid;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent), var(--purple));
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(56, 189, 248, 0.2);
+        }
+
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+
+        .stat-subtext {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+
+        .info-section {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .info-section h3 {
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .info-label {
+            color: var(--text-muted);
+        }
+
+        .info-value {
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .birthday-countdown {
+            background: linear-gradient(135deg, var(--purple), var(--pink));
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            color: white;
+            margin-bottom: 1.5rem;
+        }
+
+        .countdown-value {
+            font-size: 3rem;
+            font-weight: 800;
+            margin: 1rem 0;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .input-section {
+                padding: 1.5rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .countdown-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation">
+        <div class="particle" style="width: 5px; height: 5px; top: 20%; left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="width: 8px; height: 8px; top: 40%; left: 80%; animation-delay: 2s;"></div>
+        <div class="particle" style="width: 4px; height: 4px; top: 60%; left: 20%; animation-delay: 4s;"></div>
+        <div class="particle" style="width: 6px; height: 6px; top: 80%; left: 70%; animation-delay: 1s;"></div>
+        <div class="particle" style="width: 5px; height: 5px; top: 30%; left: 50%; animation-delay: 3s;"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>🎂 Birthday Calculator</h1>
+            <p class="subtitle">Discover Your Life in Numbers - Years, Days, Hours, and More!</p>
+        </header>
+
+        <div class="input-section">
+            <h2>📅 Enter Your Birth Date</h2>
+            <div class="input-grid">
+                <div class="input-group">
+                    <label for="birthYear">Year</label>
+                    <input type="number" id="birthYear" placeholder="e.g., 2000" min="1900" max="2024">
+                </div>
+                <div class="input-group">
+                    <label for="birthMonth">Month</label>
+                    <select id="birthMonth">
+                        <option value="">Select Month</option>
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label for="birthDay">Day</label>
+                    <input type="number" id="birthDay" placeholder="e.g., 15" min="1" max="31">
+                </div>
+                <div class="input-group">
+                    <label for="birthHour">Hour (Optional)</label>
+                    <input type="number" id="birthHour" placeholder="0-23" min="0" max="23" value="0">
+                </div>
+                <div class="input-group">
+                    <label for="birthMinute">Minute (Optional)</label>
+                    <input type="number" id="birthMinute" placeholder="0-59" min="0" max="59" value="0">
+                </div>
+            </div>
+            <button class="btn" onclick="calculateAge()">🎉 Calculate My Age</button>
+        </div>
+
+        <div class="results" id="results">
+            <div class="birthday-countdown">
+                <h3>🎊 Next Birthday</h3>
+                <div id="nextBirthdayDate"></div>
+                <div class="countdown-value" id="daysUntilBirthday"></div>
+                <p>Days Until Your Next Birthday!</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-label">Age</div>
+                    <div class="stat-value" id="ageYears">0</div>
+                    <div class="stat-subtext" id="ageDetail">Years, Months, Days</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📆</div>
+                    <div class="stat-label">Total Days Lived</div>
+                    <div class="stat-value" id="totalDays">0</div>
+                    <div class="stat-subtext">Days on Earth</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-label">Total Weeks</div>
+                    <div class="stat-value" id="totalWeeks">0</div>
+                    <div class="stat-subtext">Weeks of Life</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">🕐</div>
+                    <div class="stat-label">Total Hours</div>
+                    <div class="stat-value" id="totalHours">0</div>
+                    <div class="stat-subtext">Hours Experienced</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⏱️</div>
+                    <div class="stat-label">Total Minutes</div>
+                    <div class="stat-value" id="totalMinutes">0</div>
+                    <div class="stat-subtext">Minutes of Existence</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon">⏲️</div>
+                    <div class="stat-label">Total Seconds</div>
+                    <div class="stat-value" id="totalSeconds">0</div>
+                    <div class="stat-subtext">Every Second Counts!</div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>🌟 Birth Information</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">📅 Birth Date:</span>
+                        <span class="info-value" id="birthDateFull"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">📆 Day of Week:</span>
+                        <span class="info-value" id="dayOfWeek"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">♈ Zodiac Sign:</span>
+                        <span class="info-value" id="zodiacSign"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <h3>💡 Fun Facts About Your Life</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="info-label">🎂 Birthday Cakes:</span>
+                        <span class="info-value" id="birthdayCakes"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🌍 New Year Celebrations:</span>
+                        <span class="info-value" id="newYears"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">💤 Approximate Sleep Time:</span>
+                        <span class="info-value" id="sleepDays"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">💓 Heartbeats (approx):</span>
+                        <span class="info-value" id="heartbeats"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🌅 Sunrises Witnessed:</span>
+                        <span class="info-value" id="sunrises"></span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">🎯 Next Milestone Age:</span>
+                        <span class="info-value" id="nextMilestone"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>© 2024 Birthday Calculator | Created by M. Rajesh</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">Celebrate Every Moment of Your Life! 🎉</p>
+        </footer>
+    </div>
+
+    <script>
+        function getZodiacSign(month, day) {
+            const signs = {
+                'Capricorn ♑': [[12, 22], [1, 19]],
+                'Aquarius ♒': [[1, 20], [2, 18]],
+                'Pisces ♓': [[2, 19], [3, 20]],
+                'Aries ♈': [[3, 21], [4, 19]],
+                'Taurus ♉': [[4, 20], [5, 20]],
+                'Gemini ♊': [[5, 21], [6, 20]],
+                'Cancer ♋': [[6, 21], [7, 22]],
+                'Leo ♌': [[7, 23], [8, 22]],
+                'Virgo ♍': [[8, 23], [9, 22]],
+                'Libra ♎': [[9, 23], [10, 22]],
+                'Scorpio ♏': [[10, 23], [11, 21]],
+                'Sagittarius ♐': [[11, 22], [12, 21]]
+            };
+
+            for (const [sign, dates] of Object.entries(signs)) {
+                const [[m1, d1], [m2, d2]] = dates;
+                if ((month === m1 && day >= d1) || (month === m2 && day <= d2)) {
+                    return sign;
+                }
+            }
+            return 'Unknown';
+        }
+
+        function getDayOfWeek(date) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            return days[date.getDay()];
+        }
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+        }
+
+        function calculateAge() {
+            const year = parseInt(document.getElementById('birthYear').value);
+            const month = parseInt(document.getElementById('birthMonth').value);
+            const day = parseInt(document.getElementById('birthDay').value);
+            const hour = parseInt(document.getElementById('birthHour').value) || 0;
+            const minute = parseInt(document.getElementById('birthMinute').value) || 0;
+
+            if (!year || !month || !day) {
+                alert('Please enter your complete birth date!');
+                return;
+            }
+
+            const birthDate = new Date(year, month - 1, day, hour, minute, 0);
+            const now = new Date();
+
+            if (birthDate > now) {
+                alert('Birth date cannot be in the future!');
+                return;
+            }
+
+            // Calculate age
+            let years = now.getFullYear() - birthDate.getFullYear();
+            let months = now.getMonth() - birthDate.getMonth();
+            let days = now.getDate() - birthDate.getDate();
+
+            if (days < 0) {
+                months--;
+                const prevMonth = new Date(now.getFullYear(), now.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
+
+            if (months < 0) {
+                years--;
+                months += 12;
+            }
+
+            // Total calculations
+            const totalMs = now - birthDate;
+            const totalSeconds = Math.floor(totalMs / 1000);
+            const totalMinutes = Math.floor(totalSeconds / 60);
+            const totalHours = Math.floor(totalMinutes / 60);
+            const totalDays = Math.floor(totalHours / 24);
+            const totalWeeks = Math.floor(totalDays / 7);
+
+            // Next birthday
+            let nextBirthday = new Date(now.getFullYear(), month - 1, day);
+            if (nextBirthday < now) {
+                nextBirthday = new Date(now.getFullYear() + 1, month - 1, day);
+            }
+            const daysUntilBirthday = Math.ceil((nextBirthday - now) / (1000 * 60 * 60 * 24));
+
+            // Update UI
+            document.getElementById('ageYears').textContent = years;
+            document.getElementById('ageDetail').textContent = `${years} Years, ${months} Months, ${days} Days`;
+            document.getElementById('totalDays').textContent = formatNumber(totalDays);
+            document.getElementById('totalWeeks').textContent = formatNumber(totalWeeks);
+            document.getElementById('totalHours').textContent = formatNumber(totalHours);
+            document.getElementById('totalMinutes').textContent = formatNumber(totalMinutes);
+            document.getElementById('totalSeconds').textContent = formatNumber(totalSeconds);
+
+            // Birthday countdown
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                              'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('nextBirthdayDate').textContent = 
+                `${monthNames[nextBirthday.getMonth()]} ${nextBirthday.getDate()}, ${nextBirthday.getFullYear()}`;
+            document.getElementById('daysUntilBirthday').textContent = daysUntilBirthday;
+
+            // Birth information
+            document.getElementById('birthDateFull').textContent = 
+                `${monthNames[month - 1]} ${day}, ${year}`;
+            document.getElementById('dayOfWeek').textContent = getDayOfWeek(birthDate);
+            document.getElementById('zodiacSign').textContent = getZodiacSign(month, day);
+
+            // Fun facts
+            document.getElementById('birthdayCakes').textContent = `${years} cakes`;
+            document.getElementById('newYears').textContent = `${years} celebrations`;
+            document.getElementById('sleepDays').textContent = `${formatNumber(Math.floor(totalDays / 3))} days`;
+            document.getElementById('heartbeats').textContent = formatNumber(totalSeconds * 70);
+            document.getElementById('sunrises').textContent = formatNumber(totalDays);
+            
+            const nextMilestone = Math.ceil(years / 10) * 10;
+            document.getElementById('nextMilestone').textContent = 
+                `${nextMilestone} years (in ${nextMilestone - years} years)`;
+
+            // Show results
+            document.getElementById('results').classList.add('show');
+            
+            // Scroll to results
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        // Allow Enter key to calculate
+        document.getElementById('birthDay').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculateAge();
+            }
+        });
+    </script>
+</body>
+</html>
